@@ -14,25 +14,37 @@ git clone https://github.com/cHeRaZ-edu/deploy-conf.git
 Dentro de tu proyecto agrega un archivo `deploy.sh`
 
 ```
-# Tu usuario del servidor
-USER=$1
-# Directorio del repositorio deploy-conf
-DEPLOY_CONF="/home/$USER/deploy-conf"
-# Nombre de la carpeta del proyecto 
-PROJECT=$2
-# Carpeta donde se sincroniza produccion
-DEPLOY=$3
-# Archivo para excluir archivos que no quieres sincronizar
+# RUTA DEL RPOYECTO
+PROJECT="$HOME/express-app"
+# RUTA DE LOS GIT INGORE
 EXCLUDES="$PROJECT/.gitignore"
-# Variables de entorno, aun no esta implementado, se tiene que agregar manualemente
-ENVS="$PROJECT/.envPRD"
+#RUTA DONDE SE VA DESPLEGAR
+DEPLOY="/var/www/html"
+# ARCHIVOS A EXCLUIR DEL ESPLIEGUE
+declare -a ignores=("deploy.sh" ".gitignore" ".envExample" "excludes.temp")
+# RUTA DEL REPOSITORIO DEPLOY-CONF
+DEPLOY_CONF="$HOME/deploy-conf"
 
+# ARCHIVO TEMPORTAL DE EXCLUSIONES
+PATH_TEMP_EXCLUDE="$PROJECT/excludes.temp"
 
+cp "$EXCLUDES" "$PATH_TEMP_EXCLUDE"
+
+echo -e "\n" >> "$PATH_TEMP_EXCLUDE"
+
+for i in "${ignores[@]}"
+do
+    echo -e "$i" >> "$PATH_TEMP_EXCLUDE"
+done
 
 cd "$DEPLOY_CONF"
 
 # Iniciar deploy
-bash deploy.sh "$USER" "$PROJECT" "$DEPLOY" "$EXCLUDES" "$ENVS"
+bash deploy.sh "$PROJECT" "$DEPLOY" "$PATH_TEMP_EXCLUDE"
+
+# BORRAR ARCHIVO TEMPORAL
+rm "$PATH_TEMP_EXCLUDE"
+
 
 ```
 
@@ -43,5 +55,5 @@ En tu archivo `.cpanel.yml`
 ---
 deployment:
   tasks:
-    - /bin/bash deploy.sh "$USER" app-express app
+    - /bin/bash deploy.sh
 ```
