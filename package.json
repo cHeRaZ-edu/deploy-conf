@@ -1,0 +1,15 @@
+{
+  "name": "deploy-conf",
+  "version": "1.0.0",
+  "description": "Este proyecto se creo para poder hacer deployment desde cpanel.\r Todo se basa en el comando `rsync`",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cHeRaZ-edu/deploy-conf.git"
+  },
+  "author": "cHeRaZ-edu",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/cHeRaZ-edu/deploy-conf/issues"
+  },
+  "homepage": "https://github.com/cHeRaZ-edu/deploy-conf#readme"
+}
