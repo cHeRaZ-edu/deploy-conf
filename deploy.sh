@@ -136,6 +136,15 @@ resolve_ref() {
 subject() { git -C "$REPO" log -1 --format='%h %s' "$1" 2>/dev/null || echo "$1"; }
 current_name() { if [ -L "$CURRENT" ]; then basename "$(readlink "$CURRENT")"; fi; }
 name_sha() { echo "${1##*-}"; }  # 20261011-120000-abc1234 -> abc1234
+# Llena el arreglo global RELS sin usar < <(...): en hostings con CageFS (Hostinger) no existe /dev/fd.
+releases_array() {
+  local r
+  RELS=()
+  while IFS= read -r r; do
+    if [ -n "$r" ]; then RELS+=("$r"); fi
+  done <<< "$(releases_sorted)"
+}
+
 releases_sorted() {
   local d n
   for d in "$RELEASES"/*; do
@@ -224,7 +233,7 @@ ensure_target() {
 cleanup_releases() {
   local cur all=() n i del=0
   cur="$(current_name)"
-  mapfile -t all < <(releases_sorted)
+  releases_array; all=( ${RELS[@]+"${RELS[@]}"} )
   n=${#all[@]}
   ((n > KEEP_RELEASES)) || return 0
   for ((i = 0; i < n - KEEP_RELEASES; i++)); do
@@ -237,8 +246,11 @@ cleanup_releases() {
 deploy_releases() {
   local sha="$1" cur prev name dir
   cur="$(current_name)"
-  name="$(date +%Y%m%d-%H%M%S)-${sha:0:7}"
-  while [ -e "$RELEASES/$name" ]; do sleep 1; name="$(date +%Y%m%d-%H%M%S)-${sha:0:7}"; done
+  local ts
+  # Una release por segundo: si dos caen en el mismo segundo se ordenarian por hash y el rollback fallaria.
+  ts="$(date +%Y%m%d-%H%M%S)"
+  while compgen -G "$RELEASES/$ts-*" > /dev/null; do sleep 1; ts="$(date +%Y%m%d-%H%M%S)"; done
+  name="$ts-${sha:0:7}"
   dir="$RELEASES/$name"
   if [ -L "$TARGET" ] || [ ! -e "$TARGET" ] || [ "$ADOPT" = 1 ]; then :; else
     die "$TARGET es una carpeta real. La primera vez corre con --adopt (se respalda en $BASE/adopted-FECHA y se cambia por el symlink)"
@@ -273,7 +285,7 @@ rollback_releases() {
   local cur target="" all=() i
   cur="$(current_name)"
   [ -n "$cur" ] || die "no hay ninguna release publicada"
-  mapfile -t all < <(releases_sorted)
+  releases_array; all=( ${RELS[@]+"${RELS[@]}"} )
   if [ -n "$ROLLBACK_TO" ]; then
     target="$ROLLBACK_TO"
     [ -d "$RELEASES/$target" ] || die "no existe la release $target (mira: deploy.sh $PROJECT status)"
