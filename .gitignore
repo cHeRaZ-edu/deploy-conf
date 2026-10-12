@@ -3,3 +3,7 @@ node_modules
 uploads/*
 *.log
 .log
+
+# configuraciones reales de cada proyecto (solo se versiona el ejemplo)
+projects/*.conf
+!projects/example.conf
