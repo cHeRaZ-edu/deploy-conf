@@ -246,8 +246,11 @@ cleanup_releases() {
 deploy_releases() {
   local sha="$1" cur prev name dir
   cur="$(current_name)"
-  name="$(date +%Y%m%d-%H%M%S)-${sha:0:7}"
-  while [ -e "$RELEASES/$name" ]; do sleep 1; name="$(date +%Y%m%d-%H%M%S)-${sha:0:7}"; done
+  local ts
+  # Una release por segundo: si dos caen en el mismo segundo se ordenarian por hash y el rollback fallaria.
+  ts="$(date +%Y%m%d-%H%M%S)"
+  while compgen -G "$RELEASES/$ts-*" > /dev/null; do sleep 1; ts="$(date +%Y%m%d-%H%M%S)"; done
+  name="$ts-${sha:0:7}"
   dir="$RELEASES/$name"
   if [ -L "$TARGET" ] || [ ! -e "$TARGET" ] || [ "$ADOPT" = 1 ]; then :; else
     die "$TARGET es una carpeta real. La primera vez corre con --adopt (se respalda en $BASE/adopted-FECHA y se cambia por el symlink)"
