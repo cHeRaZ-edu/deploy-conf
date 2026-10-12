@@ -151,7 +151,7 @@ deployment:
 ## Pruebas
 
 ```bash
-bash tests/run.sh   # simula un hosting compartido: 28 pruebas (releases, rollback, health, candado, rsync, v1)
+bash tests/run.sh   # simula un hosting compartido: 29 pruebas (releases, rollback, health, candado, rsync, v1)
 ```
 
 Requiere `bash`, `git`, `rsync`, `php`, `curl` y `flock`.

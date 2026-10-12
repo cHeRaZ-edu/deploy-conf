@@ -67,6 +67,9 @@ HEALTH_EXPECT="200"
 HEALTH_RETRIES=2
 E
 
+echo "== portabilidad"
+ok "sin process substitution <(...) (en Hostinger/CageFS no existe /dev/fd)" '! grep -n "<(" "$DEPLOY" | grep -v "^[0-9]*:[[:space:]]*#" | grep -q .'
+
 echo "== modo releases"
 run app
 ok "sin --adopt no toca la carpeta real y lo explica" '[ "$(rc)" != 0 ] && out | grep -q -- "--adopt" && [ "$(page app/index.php)" = "viejo|manual" ]'
